@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCQ QnA</title>
+    <style>
+        @font-face {
+            font-family: 'Century Gothic';
+            src: local('Century Gothic');
+        }
+
+        body {
+            font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        h1 {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            font-weight: normal;
+            letter-spacing: 1px;
+            color: white;
+        }
+
+        .question {
+            font-weight: normal;
+            color: white;
+            margin-bottom: 25px;
+            font-size: 1.2em;
+            letter-spacing: 0.5px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 25px;
+            gap: 10px;
+        }
+
+        .option {
+            margin: 5px 0;
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            text-align: left;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+        }
+
+        .option:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .correct {
+            background: rgba(76, 175, 80, 0.75) !important;
+            color: white;
+            border-color: rgba(76, 175, 80, 0.9);
+        }
+
+        .incorrect {
+            background: rgba(244, 67, 54, 0.75) !important;
+            color: white;
+            border-color: rgba(244, 67, 54, 0.9);
+        }
+
+        .submit-btn {
+            background: #4a90e2;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
+            letter-spacing: 0.5px;
+        }
+
+        .submit-btn:hover {
+            background: #357abd;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        input[type="radio"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome, {{ name }}!</h1>
+        {% if not feedback %}
+        <!-- Form for submitting answer -->
+        <form method="POST">
+            {% csrf_token %}
+            <p class="question">{{ question.id }}. {{ question.question }}</p>
+            <div class="options">
+                {% for opt in options %}
+                    <label class="option">
+                        <input type="radio" 
+                               name="answer" 
+                               value="{{ opt.value }}"
+                               required>
+                        {{ opt.value }}
+                    </label>
+                {% endfor %}
+            </div>
+            <button type="submit" class="submit-btn">Submit Answer</button>
+        </form>
+        {% else %}
+        <!-- Form for showing results and moving to next question -->
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="next">
+            <p class="question">{{ question.id }}. {{ question.question }}</p>
+            <div class="options">
+                {% for opt in options %}
+                    <label class="option
+                        {% if opt.value == user_answer %}
+                            {% if opt.value == question.correct %}
+                                correct
+                            {% else %}
+                                incorrect
+                            {% endif %}
+                        {% elif opt.value == question.correct %}
+                            correct
+                        {% endif %}
+                    ">
+                        <input type="radio" 
+                               name="answer" 
+                               value="{{ opt.value }}"
+                               {% if opt.value == user_answer %}checked{% endif %}
+                               disabled>
+                        {{ opt.value }}
+                    </label>
+                {% endfor %}
+            </div>
+            <button type="submit" class="submit-btn">Next Question</button>
+        </form>
+        {% if feedback %}
+            <p class="feedback">
+                {% if feedback == "correct" %}
+                    Correct answer! ✨
+                {% else %}
+                    Incorrect answer. The correct answer is {{ question.correct }}.
+                {% endif %}
+            </p>
+        {% endif %}
+        {% endif %}
+    </div>
+</body>
+</html>
